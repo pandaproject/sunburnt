@@ -732,15 +732,15 @@ class GroupOptions(Options):
             raise NotImplementedError('GroupOptions does not support chaining.')
 
         self.schema = schema
-
-        self.params = {}
+        self.fields = {}
 
     def update(self, field, **kwargs):
         if not field:
             return
 
+        self.fields[None]['field'] = field
+
         self.params['group'] = True
-        self.params['group.field'] = field
 
         if 'group.sort' in kwargs:
             sort_field = kwargs['group.sort']
@@ -765,19 +765,13 @@ class GroupOptions(Options):
                 elif not f.indexed:
                     raise SolrError("Cannot sort on an un-indexed field")
 
-            self.params['group.sort'] = '%s %s' % (sort_field, order)
+            self.fields[None]['sort'] = '%s %s' % (sort_field, order)
 
         if 'limit' in kwargs:
-            self.params['group.limit'] = kwargs['limit']
+            self.fields[None]['limit'] = kwargs['limit']
 
         if 'offset' in kwargs:
-            self.params['group.offset'] = kwargs['offset']
-
-    def options(self):
-        if self.params:
-            return self.params
-        else:
-            return {}
+            self.fields[None]['offset'] = kwargs['offset']
 
     def field_names_in_opts(self, opts, fields):
         if fields:
