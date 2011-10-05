@@ -631,9 +631,9 @@ class SolrResponse(object):
         if self.status != 0:
             raise ValueError("Response indicates an error")
 
-        if hasattr(self, 'group') and self.group == True:
-            result_node = doc.xpath("/response/1st[@name='grouped']")[0]
-            self.result = SolrResult(schema, result_node)
+        if ('group', 'true') in self.params:
+            result_node = doc.xpath("lst[@name='grouped']")[0]
+            self.result = SolrGroupResult(schema, result_node)
         else:
             result_node = doc.xpath("/response/result")[0]
             self.result = SolrResult(schema, result_node)
@@ -686,13 +686,20 @@ class SolrGroupResult(object):
     def __init__(self, schema, node):
         self.schema = schema
 
-        self.matches = value_from_node(node.xpath("int[@name='matches']")[0])
+        group_node = node.xpath("lst")[0]
+
+        self.field = group_node.attrib['name']
+        self.matches = value_from_node(group_node.xpath("int[@name='matches']")[0])
         self.groups = {}
         self.docs = []
 
-        for n in node.xpath("result"):
-            group = SolrResult(self.schema, n)
-            self.groups.append(group)
+        group_nodes = group_node.xpath("arr/lst")
+
+        for g in group_nodes:
+            key = value_from_node(g.xpath("str[@name='groupValue']")[0])[1]
+            result = g.xpath("result")[0]
+            group = SolrResult(self.schema, result)
+            self.groups[key] = group
             self.docs.extend(group.docs)
 
     def __str__(self):
@@ -750,7 +757,8 @@ def get_attribute_or_callable(o, name):
 
 def value_from_node(node):
     name = node.attrib.get('name')
-    if node.tag in ('lst', 'arr'):
+
+    if node.tag in ('lst', 'arr', 'result'):
         value = [value_from_node(n) for n in node.getchildren()]
     if node.tag in 'doc':
         value = dict(value_from_node(n) for n in node.getchildren())

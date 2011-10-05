@@ -362,7 +362,8 @@ class BaseSearch(object):
     """Base class for common search options management"""
     option_modules = ('query_obj', 'filter_obj', 'paginator',
                       'more_like_this', 'highlighter', 'faceter',
-                      'sorter', 'facet_querier', 'field_limiter',)
+                      'sorter', 'facet_querier', 'field_limiter',
+                      'grouper',)
 
     def _init_common_modules(self):
         self.query_obj = LuceneQuery(self.schema, u'q')
@@ -437,7 +438,7 @@ class BaseSearch(object):
 
     def group_by(self, field, **kwargs):
         newself = self.clone()
-        newself.grouper.update(self.Q(field, **kwargs))
+        newself.grouper.update(field, **kwargs)
         return newself
 
     def highlight(self, fields=None, **kwargs):
