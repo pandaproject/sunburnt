@@ -344,6 +344,8 @@ good_option_data = {
     GroupOptions:(
         ({},
          {}),
+        # NB: int_field is actually not a valid group.field in Solr < 4 
+        # (only string-like fields are valid)
         ({"field":"int_field"},
          {"group":True, "group.field":"int_field"}),
         ({"field":"int_field", "limit":10, "offset":100, "sort":"-float_field"},
