@@ -14,7 +14,7 @@ print response.result
 
 print 'Testing group query'
 
-response = s.query(full_text='Education').group_by('dataset_id').execute()
+response = s.query(full_text='Education').group_by('dataset_id', limit=2).execute()
 
 for k, g in response.result.groups.items():
     print k, g.docs 

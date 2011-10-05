@@ -719,19 +719,70 @@ class FacetOptions(Options):
             opts["facet.field"] = sorted(fields)
 
 class GroupOptions(Options):
+    """
+    May only be used once, does not support chaining.
+    """
     option_name = "group"
-    opts = {}
+    opts = {"limit":int,
+            "offset":int,
+            }
 
     def __init__(self, schema, original=None):
+        if original and original.params:
+            raise NotImplementedError('GroupOptions does not support chaining.')
+
         self.schema = schema
-        if original is None:
-            self.fields = collections.defaultdict(dict)
+
+        self.params = {}
+
+    def update(self, field, **kwargs):
+        if not field:
+            return
+
+        self.params['group'] = True
+        self.params['group.field'] = field
+
+        if 'group.sort' in kwargs:
+            sort_field = kwargs['group.sort']
+            del kwargs['group.sort']
+
+            # We're not allowing function queries a la Solr1.5
+            if sort_field.startswith('-'):
+                order = "desc"
+                sort_field = sort_field[1:]
+            elif sort_field.startswith('+'):
+                order = "asc"
+                sort_field = sort_field[1:]
+            else:
+                order = "asc"
+
+            if field != 'score':
+                f = self.schema.match_field(sort_field)
+                if not f:
+                    raise SolrError("No such field %s" % sort_field)
+                elif f.multi_valued:
+                    raise SolrError("Cannot sort on a multivalued field")
+                elif not f.indexed:
+                    raise SolrError("Cannot sort on an un-indexed field")
+
+            self.params['group.sort'] = '%s %s' % (sort_field, order)
+
+        if 'limit' in kwargs:
+            self.params['group.limit'] = kwargs['limit']
+
+        if 'offset' in kwargs:
+            self.params['group.offset'] = kwargs['offset']
+
+    def options(self):
+        if self.params:
+            return self.params
         else:
-            self.fields = copy.copy(original.fields)
+            return {}
 
     def field_names_in_opts(self, opts, fields):
         if fields:
             opts["group.field"] = sorted(fields)
+            opts["group.sort"] = [] # TKTK
 
 class HighlightOptions(Options):
     option_name = "hl"
