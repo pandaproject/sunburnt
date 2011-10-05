@@ -390,6 +390,9 @@ bad_option_data = {
         {"fields":"text_field", "oops":True}, # undefined option
         {"fields":"text_field", "count":"a"} # Invalid value for option
         ),
+    GroupOptions:(
+        {"fields":"myarse"}, # Undefined field
+        ),
     }
 
 def check_bad_option_data(OptionClass, kwargs):
