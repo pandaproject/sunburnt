@@ -725,6 +725,8 @@ class GroupOptions(Options):
     option_name = "group"
     opts = {"limit":int,
             "offset":int,
+            "sort":unicode,
+            "field":unicode
             }
 
     def __init__(self, schema, original=None):
@@ -738,11 +740,15 @@ class GroupOptions(Options):
         if not field:
             return
 
-        self.fields[None] = { 'field': field }
+        # Construct dummy dict so that values won't be namespaced in url
+        self.fields[None] = {}
 
-        if 'group.sort' in kwargs:
-            sort_field = kwargs['group.sort']
-            del kwargs['group.sort']
+        # A required parameter, but passed through as kwarg for type checking, etc.
+        kwargs['field'] = field
+
+        if 'sort' in kwargs:
+            sort_field = kwargs['sort']
+            del kwargs['sort']
 
             # We're not allowing function queries a la Solr1.5
             if sort_field.startswith('-'):
@@ -763,18 +769,12 @@ class GroupOptions(Options):
                 elif not f.indexed:
                     raise SolrError("Cannot sort on an un-indexed field")
 
-            self.fields[None]['sort'] = '%s %s' % (sort_field, order)
+            kwargs['sort'] = '%s %s' % (sort_field, order)
 
-        if 'limit' in kwargs:
-            self.fields[None]['limit'] = kwargs['limit']
-
-        if 'offset' in kwargs:
-            self.fields[None]['offset'] = kwargs['offset']
+        super(GroupOptions, self).update(None, **kwargs)
 
     def field_names_in_opts(self, opts, fields):
-        if fields:
-            opts["group.field"] = sorted(fields)
-            opts["group.sort"] = [] # TKTK
+        pass 
 
 class HighlightOptions(Options):
     option_name = "hl"
