@@ -631,7 +631,7 @@ class SolrResponse(object):
         if self.status != 0:
             raise ValueError("Response indicates an error")
 
-        if ('group', 'true') in self.params:
+        if self.params and ('group', 'true') in self.params:
             result_node = doc.xpath("lst[@name='grouped']")[0]
             self.result = SolrGroupResult(schema, result_node)
         else:

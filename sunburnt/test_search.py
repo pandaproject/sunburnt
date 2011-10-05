@@ -344,8 +344,10 @@ good_option_data = {
     GroupOptions:(
         ({},
          {}),
-        ({"field":"string_field"},
-         {"group":"true", "group.field":"string_field"})
+        ({"field":"int_field"},
+         {"group":True, "group.field":"int_field"}),
+        ({"field":"int_field", "limit":10, "offset":100, "sort":"-float_field"},
+         {"group":True, "group.field":"int_field", "group.limit":10, "group.offset":100, "group.sort":"float_field desc"}),
         ),
     }
 
@@ -391,7 +393,9 @@ bad_option_data = {
         {"fields":"text_field", "count":"a"} # Invalid value for option
         ),
     GroupOptions:(
-        {"fields":"myarse"}, # Undefined field
+        {"field":"myarse"}, # Undefined field
+        {"field":"string_field"}, # Multivalued field
+        {"field":"int_field", "limit": "abc"},
         ),
     }
 
