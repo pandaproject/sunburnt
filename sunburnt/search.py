@@ -728,7 +728,7 @@ class GroupOptions(Options):
             }
 
     def __init__(self, schema, original=None):
-        if original and original.params:
+        if original and original.fields:
             raise NotImplementedError('GroupOptions does not support chaining.')
 
         self.schema = schema
@@ -738,9 +738,7 @@ class GroupOptions(Options):
         if not field:
             return
 
-        self.fields[None]['field'] = field
-
-        self.params['group'] = True
+        self.fields[None] = { 'field': field }
 
         if 'group.sort' in kwargs:
             sort_field = kwargs['group.sort']
