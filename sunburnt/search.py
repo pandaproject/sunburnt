@@ -736,6 +736,27 @@ class GroupOptions(Options):
         self.schema = schema
         self.fields = {}
 
+
+    def update(self, field):
+        # We're not allowing function queries a la Solr1.5
+        if field.startswith('-'):
+            order = "desc"
+            field = field[1:]
+        elif field.startswith('+'):
+            order = "asc"
+            field = field[1:]
+        else:
+            order = "asc"
+        if field != 'score':
+            f = self.schema.match_field(field)
+            if not f:
+                raise SolrError("No such field %s" % field)
+            elif f.multi_valued:
+                raise SolrError("Cannot sort on a multivalued field")
+            elif not f.indexed:
+                raise SolrError("Cannot sort on an un-indexed field")
+        self.fields.append([order, field])
+
     def update(self, field, **kwargs):
         if not field:
             return
@@ -743,12 +764,18 @@ class GroupOptions(Options):
         # Construct dummy dict so that values won't be namespaced in url
         self.fields[None] = {}
 
-        # A required parameter, but passed through as kwarg for type checking, etc.
+        f = self.schema.match_field(field)
+        if not f:
+            raise SolrError("No such field %s" % field)
+        elif f.multi_valued:
+            raise SolrError("Cannot sort on a multivalued field")
+        elif not f.indexed:
+            raise SolrError("Cannot sort on an un-indexed field")
+
         kwargs['field'] = field
 
         if 'sort' in kwargs:
             sort_field = kwargs['sort']
-            del kwargs['sort']
 
             # We're not allowing function queries a la Solr1.5
             if sort_field.startswith('-'):
