@@ -619,7 +619,6 @@ class SolrFacetCounts(object):
         facet_counts_dict = dict(response.get("facet_counts", {}))
         return SolrFacetCounts(**facet_counts_dict)
 
-
 class SolrResponse(object):
     def __init__(self, schema, xmlmsg):
         self.schema = schema
@@ -631,8 +630,14 @@ class SolrResponse(object):
             setattr(self, attr, details['responseHeader'].get(attr))
         if self.status != 0:
             raise ValueError("Response indicates an error")
-        result_node = doc.xpath("/response/result")[0]
-        self.result = SolrResult(schema, result_node)
+
+        if hasattr(self, 'group') and self.group == True:
+            result_node = doc.xpath("/response/1st[@name='grouped']")[0]
+            self.result = SolrResult(schema, result_node)
+        else:
+            result_node = doc.xpath("/response/result")[0]
+            self.result = SolrResult(schema, result_node)
+
         self.facet_counts = SolrFacetCounts.from_response(details)
         self.highlighting = dict((k, dict(v))
                                  for k, v in details.get("highlighting", ()))
@@ -676,6 +681,23 @@ class SolrResult(object):
     def __str__(self):
         return "%(numFound)s results found, starting at #%(start)s\n\n" % self.__dict__ + str(self.docs)
 
+
+class SolrGroupResult(object):
+    def __init__(self, schema, node):
+        self.schema = schema
+
+        self.matches = value_from_node(node.xpath("int[@name='matches']")[0])
+        self.groups = {}
+        self.docs = []
+
+        for n in node.xpath("result"):
+            group = SolrResult(self.schema, n)
+            self.groups.append(group)
+            self.docs.extend(group.docs)
+
+    def __str__(self):
+        return "%(numFound)s results found, starting at #%(start)s\n\n" % self.__dict__ + str(self.docs)
+    
 
 def object_to_dict(o, names):
     return dict((name, getattr(o, name)) for name in names

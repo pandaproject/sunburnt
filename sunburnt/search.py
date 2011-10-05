@@ -373,6 +373,7 @@ class BaseSearch(object):
         self.sorter = SortOptions(self.schema)
         self.field_limiter = FieldLimitOptions(self.schema)
         self.facet_querier = FacetQueryOptions(self.schema)
+        self.grouper = GroupOptions(self.schema)
 
     def clone(self):
         return self.__class__(interface=self.interface, original=self)
@@ -432,6 +433,11 @@ class BaseSearch(object):
     def facet_query(self, *args, **kwargs):
         newself = self.clone()
         newself.facet_querier.update(self.Q(*args, **kwargs))
+        return newself
+
+    def group_by(self, field, **kwargs):
+        newself = self.clone()
+        newself.grouper.update(self.Q(field, **kwargs))
         return newself
 
     def highlight(self, fields=None, **kwargs):
@@ -711,6 +717,20 @@ class FacetOptions(Options):
         if fields:
             opts["facet.field"] = sorted(fields)
 
+class GroupOptions(Options):
+    option_name = "group"
+    opts = {}
+
+    def __init__(self, schema, original=None):
+        self.schema = schema
+        if original is None:
+            self.fields = collections.defaultdict(dict)
+        else:
+            self.fields = copy.copy(original.fields)
+
+    def field_names_in_opts(self, opts, fields):
+        if fields:
+            opts["group.field"] = sorted(fields)
 
 class HighlightOptions(Options):
     option_name = "hl"

@@ -12,7 +12,7 @@ from lxml.etree import tostring
 import mx.DateTime
 
 from .schema import SolrSchema, SolrError
-from .search import SolrSearch, MltSolrSearch, PaginateOptions, SortOptions, FieldLimitOptions, FacetOptions, HighlightOptions, MoreLikeThisOptions, params_from_dict
+from .search import SolrSearch, MltSolrSearch, PaginateOptions, SortOptions, FieldLimitOptions, FacetOptions, HighlightOptions, MoreLikeThisOptions, GroupOptions, params_from_dict
 from .strings import RawString
 
 from nose.tools import assert_equal
@@ -340,6 +340,12 @@ good_option_data = {
          {"fl":"*,score"}),
         ({"fields":"int_field", "score": True},
          {"fl":"int_field,score"}),
+        ),
+    GroupOptions:(
+        ({},
+         {}),
+        ({"field":"string_field"},
+         {"group":"true", "group.field":"string_field"})
         ),
     }
 
