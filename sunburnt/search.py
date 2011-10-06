@@ -730,11 +730,13 @@ class GroupOptions(Options):
             }
 
     def __init__(self, schema, original=None):
-        if original and original.fields:
-            raise NotImplementedError('GroupOptions does not support chaining.')
-
         self.schema = schema
-        self.fields = {}
+
+        if original and original.fields:
+            #raise NotImplementedError('GroupOptions does not support chaining.')
+            self.fields = original.fields
+        else:
+            self.fields = {}
 
     def update(self, field=None, **kwargs):
         if not field:
