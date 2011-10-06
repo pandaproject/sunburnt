@@ -689,7 +689,7 @@ class SolrGroupResult(object):
         group_node = node.xpath("lst")[0]
 
         self.field = group_node.attrib['name']
-        self.matches = value_from_node(group_node.xpath("int[@name='matches']")[0])
+        self.matches = value_from_node(group_node.xpath("int[@name='matches']")[0])[1]
         self.groups = {}
         self.docs = []
 
@@ -703,7 +703,7 @@ class SolrGroupResult(object):
             self.docs.extend(group.docs)
 
     def __str__(self):
-        return "%(numFound)s results found, starting at #%(start)s\n\n" % self.__dict__ + str(self.docs)
+        return "%i matches found in %i groups" % (self.matches, len(self.groups))
     
 
 def object_to_dict(o, names):
