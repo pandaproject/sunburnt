@@ -733,7 +733,6 @@ class GroupOptions(Options):
         self.schema = schema
 
         if original and original.fields:
-            #raise NotImplementedError('GroupOptions does not support chaining.')
             self.fields = original.fields
         else:
             self.fields = {}
@@ -741,6 +740,9 @@ class GroupOptions(Options):
     def update(self, field=None, **kwargs):
         if not field:
             return
+
+        if self.fields:
+            raise NotImplementedError('GroupOptions does not support chaining.')
 
         # Construct dummy dict so that values won't be namespaced in url
         self.fields[None] = {}
