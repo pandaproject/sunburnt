@@ -664,7 +664,7 @@ class SolrResponse(object):
         return str(self.result)
 
     def __len__(self):
-        return len(self.result.docs)
+        return self.result.numFound
 
     def __getitem__(self, key):
         return self.result.docs[key]
@@ -689,6 +689,7 @@ class SolrGroupResult(object):
         group_node = node.xpath("lst")[0]
 
         self.field = group_node.attrib['name']
+        self.numFound = value_from_node(group_node.xpath("int[@name='ngroups']")[0])[1]
         self.matches = value_from_node(group_node.xpath("int[@name='matches']")[0])[1]
         self.groups = {}
         self.docs = []
@@ -703,8 +704,7 @@ class SolrGroupResult(object):
             self.docs.extend(group.docs)
 
     def __str__(self):
-        return "%i matches found in %i groups" % (self.matches, len(self.groups))
-    
+        return "%i matches found in %i groups" % (self.matches, self.numFound)
 
 def object_to_dict(o, names):
     return dict((name, getattr(o, name)) for name in names

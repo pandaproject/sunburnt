@@ -726,7 +726,8 @@ class GroupOptions(Options):
     opts = {"limit":int,
             "offset":int,
             "sort":unicode,
-            "field":unicode
+            "field":unicode,
+            "ngroups":bool
             }
 
     def __init__(self, schema, original=None):
@@ -756,6 +757,7 @@ class GroupOptions(Options):
             raise SolrError("Cannot sort on an un-indexed field")
 
         kwargs['field'] = field
+        kwargs['ngroups'] = True
 
         if 'sort' in kwargs:
             sort_field = kwargs['sort']
